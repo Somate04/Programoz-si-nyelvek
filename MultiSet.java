@@ -6,6 +6,14 @@ public class MultiSet<E>{
     
     private HashMap<E, Integer> elemToCount;
 
+    @SafeVarargs
+    public MultiSet(E...elems){
+        elemToCount = new HashMap<>();
+        for(E elem : elems){
+            add(elem);
+        }
+    }
+
     public MultiSet(ArrayList<E> ls){
         for(E i : ls){
             if(!elemToCount.containsKey(i)){
@@ -18,37 +26,49 @@ public class MultiSet<E>{
         
     }
 
-    public void add(E e){
-        if(!elemToCount.containsKey(e)){
-            elemToCount.put(e, 1);
-        }
-        else{
-            elemToCount.put(e, elemToCount.get(e) + 1);
-        }
+    public int add(E e){
+       int count = 1 + (elemToCount.containsKey(e) ? elemToCount.get(e) : 0);
+       elemToCount.put(e, count);
+
+        return count;        
     }
 
     public int getCount(E e){
-        if(elemToCount.containsValue(e)){
-            return elemToCount.get(e);
-        }
-        else{
-            return 0;
-        }
+        return elemToCount.getOrDefault(e, 0);
     }
 
     public MultiSet<E> intersect(MultiSet<E> set){
-        MultiSet<E> intersection = new MultiSet<E>();
-        for( i : elemToCount){
-            if(set.containsKey(i) && set.get(i) <= elemToCount.get(i)){
-                intersection.put(i, set.get(i));
+        MultiSet<E> intersect = new MultiSet<>();
+        for(E i : elemToCount.keySet()){
+            if(!set.elemToCount.containsKey(i)){
+                continue;
             }
-            else if(set.containsKey(i) && set.get(i) > elemToCount.get(i))
-                intersection.put(i, elemToCount.get(i));
+            int cnt1 = getCount(i);
+            int cnt2 = set.getCount(i);
+
+            intersect.elemToCount.put(i, Math.min(cnt1, cnt2));
         }
-        return intersection;
+        return intersect;
     }
 
     public int size(){
-        return 0;
+        int sum = 0;
+
+        for(E e : elemToCount.keySet()){
+            if(elemToCount.containsKey(e)){
+                sum += elemToCount.get(e);
+            }
+        }
+        return sum;
     } 
+
+    public int countExcept(Set<E> notCounted){
+        int cnt = 0;
+        for(Map.Entry<E, Integer> enrty : elemToCount.entrySet()){
+            if(!notCounted.contains(enrty.getKey())){
+                cnt += enrty.getValue();
+            }
+        }
+        return cnt;
+    }
 }
